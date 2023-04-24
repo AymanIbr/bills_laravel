@@ -9,10 +9,17 @@ use Illuminate\Http\Request;
 use App\Models\Invoice;
 use App\Models\Invoice_attachments;
 use App\Models\Invoice_detalis;
+use App\Models\User;
+use App\Notifications\AddInvoice;
 use Dotenv\Store\StoreBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Rap2hpoutre\FastExcel\FastExcel ;
+
+// use Rap2hpoutre\FastExcel\FastExcel;
 
 class InvoicesController extends Controller
 {
@@ -71,7 +78,7 @@ class InvoicesController extends Controller
         $Invoice_detalis->product = $request->get('product');
         $Invoice_detalis->section = $request->get('invoice_number');
         $Invoice_detalis->note = $request->get('note');
-        $Invoice_detalis->status = 'غير مدفوع';
+        $Invoice_detalis->status = 'غير مدفوعة';
         $Invoice_detalis->value_status = 2;
         $Invoice_detalis->user = Auth::user()->name;
         $Invoice_detalis->save();
@@ -89,6 +96,11 @@ class InvoicesController extends Controller
             $attachments->file_name = $file_name;
         }
         $attachments->save();
+
+        $user = User::first();
+        Notification::send($user, new AddInvoice($invoice_id));
+        // Mail::to($user)->send(new AddInvoice($user,$invoice_id));
+
         return redirect()->route('invoices.index')->with('success', 'تم اضافة الفاتورة بنجاح');
 
         // Invoice::create($request->all());
@@ -161,17 +173,16 @@ class InvoicesController extends Controller
         $invoice = Invoice::where('id', $id)->first();
         $Details = invoice_attachments::where('invoice_id', $id)->first();
         $id_page = $request->id_page;
-        if(!$id_page == 2){
+        if (!$id_page == 2) {
             if (!empty($Details->invoice_number)) {
                 Storage::delete($Details->invoice_number);
             }
             $invoice->forceDelete();
             return redirect()->route('invoices.index')->with('error', 'تم حذف الفاتورة بنجاح');
-        }else{
+        } else {
             $invoice->delete();
             return redirect()->route('invoices.index')->with('success', 'تم ارشفة الفاتورة بنجاح');
         }
-
     }
 
     public function paymentStatus(Invoice $invoice)
@@ -245,7 +256,7 @@ class InvoicesController extends Controller
     public function archive()
     {
         $invoices = Invoice::onlyTrashed()->get();
-        return view('Dashboard.invoices.archive_invoice',compact('invoices'));
+        return view('Dashboard.invoices.archive_invoice', compact('invoices'));
     }
 
     public function restore(Request $request)
@@ -256,11 +267,27 @@ class InvoicesController extends Controller
 
         return redirect()->route('invoices.archive')->with('success', 'تم الغاء الارشفة بنجاح');
     }
-    public function forecDelete (Request $request)
+    public function forecDelete(Request $request)
     {
         $id = $request->invoice_id;
         $invoices = Invoice::onlyTrashed()->findOrFail($id);
         $invoices->forceDelete();
         return redirect()->route('invoices.archive')->with('error', 'تم حذف الفاتورة بنجاح');
+    }
+
+    // print
+    public function printInvoice($id)
+    {
+        $invoices = Invoice::where('id', $id)->first();
+        return view('Dashboard.invoices.print_invoice', compact('invoices'));
+    }
+
+    // excel
+    public function export()
+    {
+        $invoice = Invoice::all();
+        // $invoice = invoice::select('invoice_number', 'invoice_Date', 'Due_date','category_id', 'product', 'Amount_collection','Amount_Commission', 'Rate_VAT', 'Value_VAT','Total', 'Status', 'Payment_Date','note')->get();
+
+        return (new FastExcel($invoice))->download('invoice_export.xlsx');
     }
 }

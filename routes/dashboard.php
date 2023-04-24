@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Dashboard\CategoriesController;
+use App\Http\Controllers\Dashboard\CustomerReportController;
 use App\Http\Controllers\Dashboard\InvoiceAttachmentController;
+use App\Http\Controllers\Dashboard\InvoiceReportController;
 use App\Http\Controllers\Dashboard\InvoicesController;
 use App\Http\Controllers\Dashboard\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +23,9 @@ Route::prefix('/')->middleware('auth')->group(function () {
 
 
     Route::resource('invoices', InvoicesController::class);
+
     Route::get('/category/{id}', [InvoicesController::class, 'getproducts']);
+    
     Route::resource('categories', CategoriesController::class);
     Route::resource('products', ProductController::class);
     Route::resource('attachments', InvoiceAttachmentController::class);
@@ -44,6 +48,17 @@ Route::prefix('/')->middleware('auth')->group(function () {
     Route::put('invoices/{invoice}/restore', [InvoicesController::class, 'restore'])->name('invoices.restore');
     Route::delete('invoices/{invoice}/force-delete', [InvoicesController::class, 'forecDelete'])->name('invoices.force-delete');
 
+    // print
+    Route::get('print_invoice/{id}', [InvoicesController::class, 'printInvoice'])->name('invoice.print');
+    //Excel
+    Route::get('invoices_export', [InvoicesController::class, 'export'])->name('invoice.export');
+
+    // Report
+    Route::get('invoice_report', [InvoiceReportController::class, 'index'])->name('invoices.report');
+    Route::post('Search_invoices', [InvoiceReportController::class, 'Search_invoices'])->name('Search_invoices');
+
+    Route::get('customer_report',[CustomerReportController::class, 'index'])->name('customer_report');
+    Route::post('Search_customers', [CustomerReportController::class, 'Search_customers'])->name('Search_customers');
 
     Route::get('/{page}', [AdminController::class, 'index']);
 });
