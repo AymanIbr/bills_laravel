@@ -2,16 +2,19 @@
 
 namespace App\Notifications;
 
+use App\Models\Invoice;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class AddInvoice extends Notification
 {
     use Queueable;
 
     protected $invoice_id;
+    // protected Invoice $invoice ;
 
     /**
      * Create a new notification instance.
@@ -20,7 +23,9 @@ class AddInvoice extends Notification
      */
     public function __construct($invoice_id)
     {
-        $this->invoice_id = $invoice_id ;
+        $this->invoice_id = $invoice_id;
+        // $this->invoice = $invoice;
+
     }
 
     /**
@@ -31,7 +36,7 @@ class AddInvoice extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -42,24 +47,22 @@ class AddInvoice extends Notification
      */
     public function toMail($notifiable)
     {
-        $url = url('http://127.0.0.1:8000/invoices/'.$this->invoice_id);
+        $url = url('http://127.0.0.1:8000/invoices/' . $this->invoice_id);
         return (new MailMessage)
-                    ->subject('اضافة فاتورة جديدة')
-                    ->line('اضافة فاتورة جديدة')
-                    ->action('عرض الفاتورة', $url)
-                    ->line('شكرا لاستخدامك برنامج ادارة الفواتير');
+            ->subject('اضافة فاتورة جديدة')
+            ->line('اضافة فاتورة جديدة')
+            ->action('عرض الفاتورة', $url)
+            ->line('شكرا لاستخدامك برنامج ادارة الفواتير');
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function toArray($notifiable)
+    public function toDatabase($notifiable)
     {
+
         return [
-            //
+            'id' => $this->invoice_id,
+            'url'=>"/invoices/{$this->invoice_id->id}",
+            'title' => 'تم اضافة فاتورة جديدة بواسطة',
+            'user' => Auth::user()->name,
         ];
     }
 }

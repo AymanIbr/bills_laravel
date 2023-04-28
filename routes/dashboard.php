@@ -25,7 +25,7 @@ Route::prefix('/')->middleware('auth')->group(function () {
     Route::resource('invoices', InvoicesController::class);
 
     Route::get('/category/{id}', [InvoicesController::class, 'getproducts']);
-    
+
     Route::resource('categories', CategoriesController::class);
     Route::resource('products', ProductController::class);
     Route::resource('attachments', InvoiceAttachmentController::class);
@@ -59,6 +59,9 @@ Route::prefix('/')->middleware('auth')->group(function () {
 
     Route::get('customer_report',[CustomerReportController::class, 'index'])->name('customer_report');
     Route::post('Search_customers', [CustomerReportController::class, 'Search_customers'])->name('Search_customers');
+
+    // notification MarkAsRead
+    Route::get('MarkAsRead_all',[InvoicesController::class, 'MarkAsRead_all'])->name('MarkAsRead_all');
 
     Route::get('/{page}', [AdminController::class, 'index']);
 });

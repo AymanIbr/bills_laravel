@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
-use Rap2hpoutre\FastExcel\FastExcel ;
+use Rap2hpoutre\FastExcel\FastExcel;
 
 // use Rap2hpoutre\FastExcel\FastExcel;
 
@@ -97,8 +97,13 @@ class InvoicesController extends Controller
         }
         $attachments->save();
 
-        $user = User::first();
-        Notification::send($user, new AddInvoice($invoice_id));
+        // $user = User::first();
+        // Notification::send($user, new AddInvoice($invoice_id));
+
+        $user = User::get(); // تذهب على كل المستخدمين
+        // $user = User::find(Auth::user()->id);  // لو اردت ان ترسلها للشخص الي انشاها فقط
+        $invoice_id = Invoice::latest()->first();
+        Notification::send($user, new AddInvoice($invoice_id));;
         // Mail::to($user)->send(new AddInvoice($user,$invoice_id));
 
         return redirect()->route('invoices.index')->with('success', 'تم اضافة الفاتورة بنجاح');
@@ -289,5 +294,15 @@ class InvoicesController extends Controller
         // $invoice = invoice::select('invoice_number', 'invoice_Date', 'Due_date','category_id', 'product', 'Amount_collection','Amount_Commission', 'Rate_VAT', 'Value_VAT','Total', 'Status', 'Payment_Date','note')->get();
 
         return (new FastExcel($invoice))->download('invoice_export.xlsx');
+    }
+
+    public function MarkAsRead_all(Request $request)
+    {
+        $userUnreadNotification= auth()->user()->unreadNotifications;
+
+        if($userUnreadNotification) {
+            $userUnreadNotification->markAsRead();
+            return back();
+        }
     }
 }
