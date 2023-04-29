@@ -1,5 +1,6 @@
 {{-- @if (Auth::user()->role_name == ['']) --}}
 <div class="dropdown nav-item main-header-notification">
+
     <a class="new nav-link" href="#">
         <svg xmlns="http://www.w3.org/2000/svg" class="header-icon-svgs" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -9,6 +10,7 @@
         </svg>
         <span class=" pulse"></span>
     </a>
+
     <div class="dropdown-menu">
         <div class="menu-header-content bg-primary text-right">
             <div class="d-flex">
@@ -23,7 +25,7 @@
         </div>
         <div id="unreadNotifications">
             @foreach (auth()->user()->unreadNotifications as $notification)
-                <div class="main-notification-list Notification-scroll">
+                <div class="main-notification-list Notification-scroll" id="unreadNotifications">
                     <a class="d-flex p-3 border-bottom "
                         href="{{ $notification->data['url'] }}?notifications_id={{ $notification->id }}">
                         <div class="notifyimg bg-pink">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Events\InvoiceEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Details_invoice;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Pusher\Pusher;
 use Rap2hpoutre\FastExcel\FastExcel;
 
 // use Rap2hpoutre\FastExcel\FastExcel;
@@ -97,13 +99,16 @@ class InvoicesController extends Controller
         }
         $attachments->save();
 
+        // pusher
+        InvoiceEvent::dispatch('تم انشاء فاتورة جديدة بواسطة ' . auth()->user()->name);
+
         // $user = User::first();
         // Notification::send($user, new AddInvoice($invoice_id));
 
         $user = User::get(); // تذهب على كل المستخدمين
         // $user = User::find(Auth::user()->id);  // لو اردت ان ترسلها للشخص الي انشاها فقط
         $invoice_id = Invoice::latest()->first();
-        Notification::send($user, new AddInvoice($invoice_id));;
+        Notification::send($user, new AddInvoice($invoice_id));
         // Mail::to($user)->send(new AddInvoice($user,$invoice_id));
 
         return redirect()->route('invoices.index')->with('success', 'تم اضافة الفاتورة بنجاح');

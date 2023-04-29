@@ -1,0 +1,12 @@
+make notification pusher :
+
+1- open pusher.com
+2- make account in the site
+3- نضع في ملف الانف الكي الخاصة بالحساب الي قمنا باءنشاءه
+4-composer require pusher/pusher-php-server
+5- نشيل الكومين عن البرودكاست في ملف app
+6- Brodcastmessage كل لها
+enent , channel
+7-php artisan optimize:clear
+8- make event
+9- php artisan make:event InvoiceEvent

@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Invoice;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -36,7 +37,7 @@ class AddInvoice extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'broadcast'];
     }
 
     /**
@@ -60,9 +61,21 @@ class AddInvoice extends Notification
 
         return [
             'id' => $this->invoice_id,
-            'url'=>"/invoices/{$this->invoice_id->id}",
+            'url' => "/invoices/{$this->invoice_id->id}",
             'title' => 'تم اضافة فاتورة جديدة بواسطة',
             'user' => Auth::user()->name,
         ];
+    }
+
+
+    public function toBroadcast($notifiable)
+    {
+
+        return new BroadcastMessage([
+            'id' => $this->invoice_id,
+            'url' => "/invoices/{$this->invoice_id->id}",
+            'title' => 'تم اضافة فاتورة جديدة بواسطة',
+            'user' => Auth::user()->name,
+        ]);
     }
 }
